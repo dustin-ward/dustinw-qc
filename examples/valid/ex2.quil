@@ -1,0 +1,7 @@
+RX(0.45) 0
+RZ(-1.0) 0
+RZ(1.0) 1
+RX(0.45) 1
+CZ 0 1
+MEASURE 0
+MEASURE 1
