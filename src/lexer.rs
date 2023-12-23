@@ -12,7 +12,7 @@ pub enum TokenType {
     LParen,
     RParen,
     Negative,
-    EOF,
+    EOL,
 
     RX,
     RZ,
@@ -105,7 +105,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                         '(' => TokenType::LParen,
                         ')' => TokenType::RParen,
                         '-' => TokenType::Negative,
-                        ';' => TokenType::EOF,
+                        ';' => TokenType::EOL,
                         _ => TokenType::UNDEF,
                     };
 
@@ -117,9 +117,9 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                 }
 
                 if let Some(last_token) = tokens.last() {
-                    if last_token.t != TokenType::EOF {
+                    if last_token.t != TokenType::EOL {
                         tokens.push(Token{
-                            t: TokenType::EOF,
+                            t: TokenType::EOL,
                             line: lineno as u32 + 1,
                             pos: line.len() as u32 + 1,
                         });
@@ -140,21 +140,77 @@ mod tests {
     use super::*;
 
     #[test]
-    fn get_float_tokens() {
+    fn get_numeric_tokens() {
         let expected_tokens = vec![
             Token{t: TokenType::Float(1.234), line: 1, pos: 1},
-            Token{t: TokenType::EOF, line: 1, pos: 6},
-            Token{t: TokenType::Float(12345.6789), line: 2, pos: 1},
-            Token{t: TokenType::EOF, line: 2, pos: 11},
-            Token{t: TokenType::Float(0.0), line: 3, pos: 1},
-            Token{t: TokenType::EOF, line: 3, pos: 4},
-            Token{t: TokenType::Float(0.0001), line: 4, pos: 1},
-            Token{t: TokenType::EOF, line: 4, pos: 7},
-            Token{t: TokenType::Float(1.), line: 5, pos: 1},
-            Token{t: TokenType::EOF, line: 5, pos: 3},
+            Token{t: TokenType::EOL, line: 1, pos: 6},
+            Token{t: TokenType::Integer(0), line: 2, pos: 1},
+            Token{t: TokenType::EOL, line: 2, pos: 2},
+            Token{t: TokenType::Float(12345.6789), line: 3, pos: 1},
+            Token{t: TokenType::EOL, line: 3, pos: 11},
+            Token{t: TokenType::Float(1.), line: 4, pos: 1},
+            Token{t: TokenType::EOL, line: 4, pos: 3},
+            Token{t: TokenType::Float(0.0), line: 5, pos: 1},
+            Token{t: TokenType::EOL, line: 5, pos: 4},
+            Token{t: TokenType::Integer(1), line: 6, pos: 1},
+            Token{t: TokenType::EOL, line: 6, pos: 2},
+            Token{t: TokenType::Integer(2000000000), line: 7, pos: 1},
+            Token{t: TokenType::EOL, line: 7, pos: 11},
+            Token{t: TokenType::Float(0.0001), line: 8, pos: 1},
+            Token{t: TokenType::EOL, line: 8, pos: 7},
+            Token{t: TokenType::Integer(12345), line: 9, pos: 1},
+            Token{t: TokenType::EOL, line: 9, pos: 6},
         ];
 
-        let test_filename = "examples/testdata/get_float_tokens.testdata";
+        let test_filename = "examples/testdata/get_numeric_tokens.testdata";
+        let actual_tokens = tokenize(test_filename).unwrap();
+
+        assert_eq!(expected_tokens.len(), actual_tokens.len());
+
+        for (i, ex_token) in expected_tokens.iter().enumerate() {
+            assert_eq!(ex_token, &actual_tokens[i]);
+        }
+    }
+
+    #[test]
+    fn get_function_tokens() {
+        let expected_tokens = vec![
+            Token{t: TokenType::RX, line: 1, pos: 1},
+            Token{t: TokenType::EOL, line: 1, pos: 3},
+            Token{t: TokenType::RZ, line: 2, pos: 1},
+            Token{t: TokenType::EOL, line: 2, pos: 3},
+            Token{t: TokenType::CZ, line: 3, pos: 1},
+            Token{t: TokenType::EOL, line: 3, pos: 3},
+            Token{t: TokenType::MEASURE, line: 4, pos: 1},
+            Token{t: TokenType::EOL, line: 4, pos: 8},
+        ];
+
+        let test_filename = "examples/testdata/get_function_tokens.testdata";
+        let actual_tokens = tokenize(test_filename).unwrap();
+
+        assert_eq!(expected_tokens.len(), actual_tokens.len());
+
+        for (i, ex_token) in expected_tokens.iter().enumerate() {
+            assert_eq!(ex_token, &actual_tokens[i]);
+        }
+    }
+    
+    #[test]
+    fn get_misc_tokens() {
+        let expected_tokens = vec![
+            Token{t: TokenType::LParen, line: 1, pos: 1},
+            Token{t: TokenType::EOL, line: 1, pos: 2},
+            Token{t: TokenType::RParen, line: 1, pos: 3},
+            Token{t: TokenType::EOL, line: 1, pos: 4},
+            Token{t: TokenType::Negative, line: 2, pos: 1},
+            Token{t: TokenType::LParen, line: 2, pos: 2},
+            Token{t: TokenType::EOL, line: 2, pos: 3},
+            Token{t: TokenType::EOL, line: 3, pos: 1},
+            Token{t: TokenType::RParen, line: 3, pos: 2},
+            Token{t: TokenType::EOL, line: 3, pos: 3},
+        ];
+
+        let test_filename = "examples/testdata/get_misc_tokens.testdata";
         let actual_tokens = tokenize(test_filename).unwrap();
 
         assert_eq!(expected_tokens.len(), actual_tokens.len());
