@@ -7,7 +7,7 @@ pub enum TokenType {
     UNDEF,
 
     Float(f64),
-    QIdx(u32),
+    Integer(u32),
 
     LParen,
     RParen,
@@ -98,7 +98,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                                 TokenType::Float(f)
                             } else {
                                 let u: u32 = ident.parse().unwrap();
-                                TokenType::QIdx(u)
+                                TokenType::Integer(u)
                             }
                         },
 
