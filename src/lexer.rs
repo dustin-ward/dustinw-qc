@@ -20,6 +20,7 @@ pub enum TokenType {
     MEASURE,
 }
 
+// Wrap token type with line+pos info
 #[derive(Debug, PartialEq)]
 pub struct Token {
     t: TokenType,
@@ -27,12 +28,15 @@ pub struct Token {
     pos: u32,
 }
 
+// Read file by line from:
+// https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where P: AsRef<Path>, {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
 }
 
+// Returns vector of tokens derived from file
 pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
     match read_lines(filename) {
         Ok(lines) => {
@@ -41,6 +45,8 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
             for (lineno, line_result) in lines.enumerate() {
                 let line = line_result.unwrap();
 
+                // Iterate over chars with 'peekable' trait to avoid
+                // consuming next character
                 let mut iter = line.chars().enumerate().peekable();
                 while iter.peek() != None {
                     let (pos, ch) = iter.next().unwrap();
@@ -56,6 +62,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                     };
 
                     new_token.t = match ch {
+                        // Alphabetic tokens (RZ, RZ, etc.)
                         ch if ch.is_alphabetic() => {
                             let mut ident = String::from(ch.to_string());
 
@@ -77,6 +84,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                             }
                         },
 
+                        // Numeric tokens (Floats or Ints)
                         ch if ch.is_numeric() => {
                             let mut ident = String::from(ch.to_string());
                             let mut is_float = false;
@@ -102,6 +110,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                             }
                         },
 
+                        // Misc Tokens
                         '(' => TokenType::LParen,
                         ')' => TokenType::RParen,
                         '-' => TokenType::Negative,
@@ -116,6 +125,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                     tokens.push(new_token);
                 }
 
+                // If last token was not an end-of-line token, insert one
                 if let Some(last_token) = tokens.last() {
                     if last_token.t != TokenType::EOL {
                         tokens.push(Token{
@@ -170,6 +180,13 @@ mod tests {
         for (i, ex_token) in expected_tokens.iter().enumerate() {
             assert_eq!(ex_token, &actual_tokens[i]);
         }
+    }
+
+    #[test]
+    fn invalid_numeric_tokens() {
+        let test_filename = "examples/testdata/invalid_numeric_tokens1.testdata";
+        let err = tokenize(test_filename).unwrap_err();
+        assert_eq!(err, "Undefined token at 1:1 \".\"");
     }
 
     #[test]
