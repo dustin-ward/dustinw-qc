@@ -23,10 +23,10 @@ pub enum TokenType {
 // Wrap token type with line+pos info
 #[derive(Debug, PartialEq)]
 pub struct Token {
-    t: TokenType,
-    line: u32,
-    pos: u32,
-    len: usize,
+    pub t: TokenType,
+    pub line: u32,
+    pub pos: u32,
+    pub len: usize,
 }
 
 // Read file by line from:
