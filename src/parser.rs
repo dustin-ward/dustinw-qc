@@ -75,7 +75,7 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                     match token.t {
                         TokenType::Float(f) => f_val = f,
                         TokenType::Integer(u) => f_val = u as f64,
-                        _ => return Err(format!("Invalid float value for instruction at {}:{}", inst_token.line, inst_token.pos)),
+                        _ => return Err(format!("Invalid token at {}:{}, exepected floating point value", token.line, token.pos)),
                     }
                     if negative {
                         f_val = -f_val;
@@ -171,7 +171,222 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lexer::Token;
     const TESTDATA_DIR: &str = "examples/testdata";
+
+    // General tests
+
+    #[test]
+    fn parse_integer_for_param() {
+        let tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 3, len: 1},
+            Token{t: TokenType::Integer(0), line: 1, pos: 4, len: 1},
+            Token{t: TokenType::RParen, line: 1, pos: 5, len: 1},
+            Token{t: TokenType::Integer(0), line: 1, pos: 7, len: 1},
+            Token{t: TokenType::EOL, line: 1, pos: 8, len: 1},
+        ];
+        let expected_instr = vec![
+            Instruction::RZ{f: 0.0, q: 0},
+        ];
+
+        let actual_instr = parse(&tokens).unwrap();
+        assert_eq!(expected_instr.len(), actual_instr.len());
+
+        for (i, ex_instr) in expected_instr.iter().enumerate() {
+            assert_eq!(ex_instr, &actual_instr[i]);
+        }
+    }
+
+    #[test]
+    fn parse_negative_float() {
+        let mut tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 3, len: 1},
+            Token{t: TokenType::Negative, line: 1, pos: 4, len: 1},
+            Token{t: TokenType::Float(0.1), line: 1, pos: 5, len: 3},
+            Token{t: TokenType::RParen, line: 1, pos: 8, len: 1},
+            Token{t: TokenType::Integer(0), line: 1, pos: 10, len: 1},
+            Token{t: TokenType::EOL, line: 1, pos: 11, len: 1},
+
+            Token{t: TokenType::RX, line: 2, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 2, pos: 3, len: 1},
+            Token{t: TokenType::Negative, line: 2, pos: 4, len: 1},
+            Token{t: TokenType::Integer(1), line: 2, pos: 5, len: 1},
+            Token{t: TokenType::RParen, line: 2, pos: 6, len: 1},
+            Token{t: TokenType::Integer(1), line: 2, pos: 8, len: 1},
+            Token{t: TokenType::EOL, line: 2, pos: 9, len: 1},
+
+            Token{t: TokenType::RZ, line: 3, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 3, pos: 3, len: 1},
+            Token{t: TokenType::Negative, line: 3, pos: 4, len: 1},
+            Token{t: TokenType::Float(0.0), line: 3, pos: 5, len: 3},
+            Token{t: TokenType::RParen, line: 3, pos: 8, len: 1},
+            Token{t: TokenType::Integer(0), line: 3, pos: 10, len: 1},
+            Token{t: TokenType::EOL, line: 3, pos: 11, len: 1},
+        ];
+
+        let expected_instr = vec![
+            Instruction::RZ{f: -0.1, q: 0},
+            Instruction::RX{f: -1.0, q: 1},
+            Instruction::RZ{f: 0.0, q: 0},
+        ];
+
+        let actual_instr = parse(&tokens).unwrap();
+        assert_eq!(expected_instr.len(), actual_instr.len());
+
+        for (i, ex_instr) in expected_instr.iter().enumerate() {
+            assert_eq!(ex_instr, &actual_instr[i]);
+        }
+
+        tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 3, len: 1},
+            Token{t: TokenType::Negative, line: 1, pos: 4, len: 1},
+            Token{t: TokenType::EOL, line: 1, pos: 11, len: 1},
+        ];
+
+        let err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Missing parameter for instruction at 1:1")
+    }
+    
+    #[test]
+    fn parse_invalid_first_token() {
+        let tokens = vec![
+            Token{t: TokenType::LParen, line: 1, pos: 1, len: 1},
+            Token{t: TokenType::Float(0.123), line: 1, pos: 2, len: 5},
+            Token{t: TokenType::RParen, line: 1, pos: 7, len: 1},
+        ];
+
+        let err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Invalid inst_token at 1:1, expected instruction. (RX, RZ, etc.)");
+    }
+
+    #[test]
+    fn parse_early_eol() {
+        let tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::EOL, line: 1, pos: 2, len: 1},
+            Token{t: TokenType::LParen, line: 1, pos: 3, len: 1},
+            Token{t: TokenType::Float(0.123), line: 1, pos: 4, len: 5},
+            Token{t: TokenType::RParen, line: 1, pos: 9, len: 1},
+            Token{t: TokenType::Integer(0), line: 1, pos: 10, len: 1},
+        ];
+
+        let err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Invalid or missing token sequence after instruction at 1:1");
+    }
+
+    #[test]
+    fn parse_missing_parens() {
+        let mut tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::Float(0.123), line: 1, pos: 2, len: 5},
+            Token{t: TokenType::RParen, line: 1, pos: 7, len: 1},
+            Token{t: TokenType::Integer(0), line: 1, pos: 9, len: 1},
+        ];
+
+        let mut err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Unexpected token at 1:2, expected '('");
+
+        tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 2, len: 1},
+            Token{t: TokenType::Float(0.123), line: 1, pos: 3, len: 5},
+            Token{t: TokenType::Integer(0), line: 1, pos: 9, len: 1},
+        ];
+
+        err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Unexpected token at 1:9, expected ')'");
+        
+        tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 2, len: 1},
+            Token{t: TokenType::Float(0.123), line: 1, pos: 3, len: 5},
+            Token{t: TokenType::EOL, line: 1, pos: 8, len: 1},
+        ];
+
+        err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Missing ')' after instruction at 1:1");
+    }
+
+    #[test]
+    fn parse_missing_float() {
+        let mut tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 2, len: 1},
+            Token{t: TokenType::RParen, line: 1, pos: 3, len: 1},
+            Token{t: TokenType::Integer(0), line: 1, pos: 5, len: 1},
+        ];
+
+        let mut err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Invalid token at 1:3, exepected floating point value");
+
+        tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 2, len: 1},
+            Token{t: TokenType::EOL, line: 1, pos: 3, len: 1},
+        ];
+
+        err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Missing parameter for instruction at 1:1");
+    }
+
+    #[test]
+    fn parse_missing_qbit_index() {
+        let mut tokens = vec![
+            Token{t: TokenType::RZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 2, len: 1},
+            Token{t: TokenType::Float(1.2), line: 1, pos: 3, len: 3},
+            Token{t: TokenType::RParen, line: 1, pos: 6, len: 1},
+            Token{t: TokenType::EOL, line: 1, pos: 7, len: 1},
+        ];
+
+        let mut err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Missing qbit index after instruction at 1:1");
+
+        tokens = vec![
+            Token{t: TokenType::RX, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::LParen, line: 1, pos: 2, len: 1},
+            Token{t: TokenType::Float(1.2), line: 1, pos: 3, len: 3},
+            Token{t: TokenType::RParen, line: 1, pos: 6, len: 1},
+            Token{t: TokenType::RX, line: 1, pos: 8, len: 2},
+            Token{t: TokenType::EOL, line: 1, pos: 10, len: 1},
+        ];
+
+        err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Unexpected token at 1:8, expected qbit index");
+
+        tokens = vec![
+            Token{t: TokenType::CZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::Float(1.2), line: 1, pos: 3, len: 3},
+            Token{t: TokenType::EOL, line: 1, pos: 6, len: 1},
+        ];
+
+        err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Unexpected token at 1:3, expected qbit index");
+
+        tokens = vec![
+            Token{t: TokenType::CZ, line: 1, pos: 1, len: 2},
+            Token{t: TokenType::Integer(1), line: 1, pos: 3, len: 3},
+            Token{t: TokenType::Float(1.2), line: 1, pos: 5, len: 3},
+            Token{t: TokenType::EOL, line: 1, pos: 8, len: 1},
+        ];
+
+        err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Unexpected token at 1:5, expected qbit index");
+
+        tokens = vec![
+            Token{t: TokenType::MEASURE, line: 1, pos: 1, len: 7},
+            Token{t: TokenType::Float(1.2), line: 1, pos: 9, len: 3},
+            Token{t: TokenType::EOL, line: 1, pos: 13, len: 1},
+        ];
+
+        err = parse(&tokens).unwrap_err();
+        assert_eq!(err, "Unexpected token at 1:9, expected qbit index");
+    }
+
+    // Sample input tests
 
     #[test]
     fn parse_sample_1() {
