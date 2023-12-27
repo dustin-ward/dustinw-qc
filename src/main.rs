@@ -1,8 +1,10 @@
 use std::env;
 use std::process;
 
-pub mod lexer;
-pub mod parser;
+use dustinw_qc::lexer;
+use dustinw_qc::parser;
+
+use dustinw_qc::optimize::native_translation;
 
 fn main() {
     // Parse Args
@@ -27,8 +29,22 @@ fn main() {
         println!("parser: {}", err);
         process::exit(1);
     }
-    let program: Vec<parser::Instruction> = program_result.unwrap();
+    let mut program: Vec<parser::Instruction> = program_result.unwrap();
 
+    // Code passes
+    let code_passes = vec![
+        ("native_translation", native_translation::native_translation_pass),
+        // ("deadcode", deadcode),
+    ];
+    for (name, pass_func) in code_passes {
+        match pass_func(program) {
+            Ok(new_prog) => program = new_prog,
+            Err(err) => {
+                println!("{}: {}", name, err);
+                process::exit(1);
+            },
+        }
+    }
 
     dbg!(program);
 }

@@ -2,13 +2,13 @@ use crate::lexer;
 use crate::lexer::TokenType;
 use std::collections::VecDeque;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Instruction {
     INVALID,
-    RX{f: f64, q: u32},
-    RZ{f: f64, q: u32},
-    CZ{q1: u32, q2: u32},
-    MEASURE{q: u32},
+    RX(f64, u32),
+    RZ(f64, u32),
+    CZ(u32, u32),
+    MEASURE(u32),
 }
 
 pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
@@ -20,10 +20,10 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
         // First inst_token in line should match function tokens.
         // (RX, RZ, etc.)
         let mut new_inst = match inst_token.t {
-            TokenType::RX => Instruction::RX{f: 0.0, q: 0},
-            TokenType::RZ => Instruction::RZ{f: 0.0, q: 0},
-            TokenType::CZ => Instruction::CZ{q1: 0, q2: 0},
-            TokenType::MEASURE => Instruction::MEASURE{q: 0},
+            TokenType::RX => Instruction::RX(0.0, 0),
+            TokenType::RZ => Instruction::RZ(0.0, 0),
+            TokenType::CZ => Instruction::CZ(0, 0),
+            TokenType::MEASURE => Instruction::MEASURE(0),
             _ => Instruction::INVALID,
         };
         if new_inst == Instruction::INVALID {
@@ -43,7 +43,7 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
         }
 
         match new_inst {
-            Instruction::RX{..} | Instruction::RZ{..} => {
+            Instruction::RX(_,_) | Instruction::RZ(_,_) => {
                 // Remaining tokens in the form '(', optional '-', Float|Int, ')', Int
                 let mut f_val;
                 let q_val;
@@ -104,13 +104,13 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                 }
 
                 new_inst = match new_inst {
-                    Instruction::RX{..} => Instruction::RX{f:f_val, q:q_val},
-                    Instruction::RZ{..} => Instruction::RZ{f:f_val, q:q_val},
+                    Instruction::RX(_,_) => Instruction::RX(f_val, q_val),
+                    Instruction::RZ(_,_) => Instruction::RZ(f_val, q_val),
                     _ => Instruction::INVALID,
                 }
             },
 
-            Instruction::CZ{..} => {
+            Instruction::CZ(_,_) => {
                 let q1_val;
                 let q2_val;
 
@@ -135,12 +135,12 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                 }
 
                 new_inst = match new_inst {
-                    Instruction::CZ{..} => Instruction::CZ{q1:q1_val, q2:q2_val},
+                    Instruction::CZ(_,_) => Instruction::CZ(q1_val, q2_val),
                     _ => Instruction::INVALID,
                 }
             },
 
-            Instruction::MEASURE{..} => {
+            Instruction::MEASURE(_) => {
                 let q_val;
 
                 // QBit index
@@ -154,7 +154,7 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                 }
 
                 new_inst = match new_inst {
-                    Instruction::MEASURE{..} => Instruction::MEASURE{q:q_val},
+                    Instruction::MEASURE(_) => Instruction::MEASURE(q_val),
                     _ => Instruction::INVALID,
                 }
             },
@@ -187,7 +187,7 @@ mod tests {
             Token{t: TokenType::EOL, line: 1, pos: 8, len: 1},
         ];
         let expected_instr = vec![
-            Instruction::RZ{f: 0.0, q: 0},
+            Instruction::RZ(0.0, 0),
         ];
 
         let actual_instr = parse(&tokens).unwrap();
@@ -227,9 +227,9 @@ mod tests {
         ];
 
         let expected_instr = vec![
-            Instruction::RZ{f: -0.1, q: 0},
-            Instruction::RX{f: -1.0, q: 1},
-            Instruction::RZ{f: 0.0, q: 0},
+            Instruction::RZ(-0.1, 0),
+            Instruction::RX(-1.0, 1),
+            Instruction::RZ(0.0, 0),
         ];
 
         let actual_instr = parse(&tokens).unwrap();
@@ -391,7 +391,7 @@ mod tests {
     #[test]
     fn parse_sample_1() {
         let expected_instr = vec![
-            Instruction::RX{f: 0.45, q: 0},
+            Instruction::RX(0.45, 0),
         ];
 
         let test_filename = format!("{TESTDATA_DIR}/sample_1.quil");
@@ -408,13 +408,13 @@ mod tests {
     #[test]
     fn parse_sample_2() {
         let expected_instr = vec![
-            Instruction::RX{f: 0.45, q: 0},
-            Instruction::RZ{f: -1.0, q: 0},
-            Instruction::RZ{f: 1.0, q: 1},
-            Instruction::RX{f: 0.45, q: 1},
-            Instruction::CZ{q1: 0, q2: 1},
-            Instruction::MEASURE{q: 0},
-            Instruction::MEASURE{q: 1},
+            Instruction::RX(0.45, 0),
+            Instruction::RZ(-1.0, 0),
+            Instruction::RZ(1.0, 1),
+            Instruction::RX(0.45, 1),
+            Instruction::CZ(0, 1),
+            Instruction::MEASURE(0),
+            Instruction::MEASURE(1),
         ];
 
         let test_filename = format!("{TESTDATA_DIR}/sample_2.quil");
@@ -431,12 +431,12 @@ mod tests {
     #[test]
     fn parse_sample_3() {
         let expected_instr = vec![
-            Instruction::RX{f: 0.45, q: 0},
-            Instruction::RZ{f: -1.0, q: 0},
-            Instruction::RZ{f: 1.0, q: 1},
-            Instruction::RX{f: 0.45, q: 1},
-            Instruction::CZ{q1: 1, q2: 0},
-            Instruction::RZ{f: 1.5707963267948966, q: 1},
+            Instruction::RX(0.45, 0),
+            Instruction::RZ(-1.0, 0),
+            Instruction::RZ(1.0, 1),
+            Instruction::RX(0.45, 1),
+            Instruction::CZ(1, 0),
+            Instruction::RZ(1.5707963267948966, 1),
         ];
 
         let test_filename = format!("{TESTDATA_DIR}/sample_3.quil");
