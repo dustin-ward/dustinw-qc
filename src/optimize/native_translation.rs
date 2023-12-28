@@ -76,4 +76,37 @@ mod tests {
             assert_eq!(instr, &actual_instr[i]);
         }
     }   
+
+    #[test]
+    fn non_native_fp_precision() {
+        let init_instr = vec![
+            // Enough decimal places to be considered "equal" to PI/2
+            // Just going with the default Rust equality. Could
+            // implement an 'epsilon' value for varying degrees of
+            // accuracy.
+            Instruction::RX(1.5707963267948966, 0),
+
+            // One decimal place too short
+            Instruction::RX(1.570796326794896, 1),
+        ];
+
+        let expected_instr = vec![
+            Instruction::RX(1.5707963267948966, 0),
+
+            Instruction::RZ(PI/2.0, 1),
+            Instruction::RX(PI/2.0, 1),
+            Instruction::RZ(1.570796326794896, 1),
+            Instruction::RX(-PI/2.0, 1),
+            Instruction::RZ(-PI/2.0, 1),
+
+        ];
+
+        let actual_instr = native_translation_pass(init_instr).unwrap();
+
+        assert_eq!(expected_instr.len(), actual_instr.len());
+
+        for (i, instr) in expected_instr.iter().enumerate() {
+            assert_eq!(instr, &actual_instr[i]);
+        }
+    }   
 }
