@@ -2,7 +2,7 @@ use crate::lexer;
 use crate::lexer::TokenType;
 use std::collections::VecDeque;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Instruction {
     INVALID,
     RX(f64, u32),

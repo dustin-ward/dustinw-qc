@@ -15,7 +15,7 @@ pub fn deadcode_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, Stri
         })
         .collect();
 
-        return Ok(new_prog);
+    return Ok(new_prog);
 }
 
 #[cfg(test)]
