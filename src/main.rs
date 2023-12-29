@@ -5,8 +5,8 @@ use dustinw_qc::lexer;
 use dustinw_qc::parser;
 use dustinw_qc::parser::Instruction;
 
-use dustinw_qc::optimize::native_translation;
 use dustinw_qc::optimize::deadcode;
+use dustinw_qc::optimize::native_translation;
 
 fn main() {
     // Parse Args
@@ -34,8 +34,14 @@ fn main() {
     let mut program: Vec<Instruction> = program_result.unwrap();
 
     // Code passes
-    let code_passes: Vec<(&str, fn(Vec<Instruction>) -> Result<Vec<Instruction>, String>)> = vec![
-        ("native_translation", native_translation::native_translation_pass),
+    let code_passes: Vec<(
+        &str,
+        fn(Vec<Instruction>) -> Result<Vec<Instruction>, String>,
+    )> = vec![
+        (
+            "native_translation",
+            native_translation::native_translation_pass,
+        ),
         ("deadcode", deadcode::deadcode_pass),
     ];
     for (name, pass_func) in code_passes {
@@ -44,7 +50,7 @@ fn main() {
             Err(err) => {
                 println!("{}: {}", name, err);
                 process::exit(1);
-            },
+            }
         }
     }
 

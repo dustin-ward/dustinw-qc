@@ -5,17 +5,17 @@ pub fn cz_cancel_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, Str
 
     let mut i = 0;
     while i < program.len() {
-        if i < program.len()-1 {
+        if i < program.len() - 1 {
             if let Instruction::CZ(q1, q2) = program[i] {
-                if let Instruction::CZ(q3, q4) = program[i+1] {
-                    if (q1==q3 && q2==q4) || (q1==q4 && q2==q3) {
+                if let Instruction::CZ(q3, q4) = program[i + 1] {
+                    if (q1 == q3 && q2 == q4) || (q1 == q4 && q2 == q3) {
                         // Skip duplicate cz
                         i += 1
                     }
                 }
             }
         }
-        
+
         new_prog.push(program[i]);
         i += 1
     }
@@ -23,6 +23,7 @@ pub fn cz_cancel_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, Str
     return Ok(new_prog);
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     use super::*;

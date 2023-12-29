@@ -15,6 +15,7 @@ pub fn reorder_pass(mut program: Vec<Instruction>) -> Result<Vec<Instruction>, S
     return Ok(new_prog);
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -16,7 +16,6 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
 
     let mut iter = tokens.iter();
     while let Some(inst_token) = iter.next() {
-
         // First inst_token in line should match function tokens.
         // (RX, RZ, etc.)
         let mut new_inst = match inst_token.t {
@@ -27,23 +26,29 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
             _ => Instruction::INVALID,
         };
         if new_inst == Instruction::INVALID {
-            return Err(format!("Invalid inst_token at {}:{}, expected instruction. (RX, RZ, etc.)", inst_token.line, inst_token.pos));
+            return Err(format!(
+                "Invalid inst_token at {}:{}, expected instruction. (RX, RZ, etc.)",
+                inst_token.line, inst_token.pos
+            ));
         }
 
         // Match the rest of the tokens up to EOL
         let mut rem_tokens: VecDeque<&lexer::Token> = VecDeque::new();
         while let Some(next_token) = iter.next() {
             if next_token.t == TokenType::EOL {
-                break
+                break;
             }
             rem_tokens.push_back(next_token);
         }
         if rem_tokens.len() == 0 {
-            return Err(format!("Invalid or missing token sequence after instruction at {}:{}", inst_token.line, inst_token.pos));
+            return Err(format!(
+                "Invalid or missing token sequence after instruction at {}:{}",
+                inst_token.line, inst_token.pos
+            ));
         }
 
         match new_inst {
-            Instruction::RX(_,_) | Instruction::RZ(_,_) => {
+            Instruction::RX(_, _) | Instruction::RZ(_, _) => {
                 // Remaining tokens in the form '(', optional '-', Float|Int, ')', Int
                 let mut f_val;
                 let q_val;
@@ -51,10 +56,16 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                 // Left paren token
                 if let Some(token) = rem_tokens.pop_front() {
                     if token.t != TokenType::LParen {
-                        return Err(format!("Unexpected token at {}:{}, expected '('", token.line, token.pos));
+                        return Err(format!(
+                            "Unexpected token at {}:{}, expected '('",
+                            token.line, token.pos
+                        ));
                     }
                 } else {
-                    return Err(format!("Missing '(' after instruction at {}:{}", inst_token.line, inst_token.pos));
+                    return Err(format!(
+                        "Missing '(' after instruction at {}:{}",
+                        inst_token.line, inst_token.pos
+                    ));
                 }
 
                 // Float value
@@ -65,7 +76,10 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                         negative = true;
                         let res = rem_tokens.pop_front();
                         if res == None {
-                            return Err(format!("Missing parameter for instruction at {}:{}", inst_token.line, inst_token.pos));
+                            return Err(format!(
+                                "Missing parameter for instruction at {}:{}",
+                                inst_token.line, inst_token.pos
+                            ));
                         } else {
                             token = res.unwrap();
                         }
@@ -75,42 +89,64 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                     match token.t {
                         TokenType::Float(f) => f_val = f,
                         TokenType::Integer(u) => f_val = u as f64,
-                        _ => return Err(format!("Invalid token at {}:{}, exepected floating point value", token.line, token.pos)),
+                        _ => {
+                            return Err(format!(
+                                "Invalid token at {}:{}, exepected floating point value",
+                                token.line, token.pos
+                            ))
+                        }
                     }
                     if negative {
                         f_val = -f_val;
                     }
                 } else {
-                    return Err(format!("Missing parameter for instruction at {}:{}", inst_token.line, inst_token.pos));
+                    return Err(format!(
+                        "Missing parameter for instruction at {}:{}",
+                        inst_token.line, inst_token.pos
+                    ));
                 }
 
                 // Right paren token
                 if let Some(token) = rem_tokens.pop_front() {
                     if token.t != TokenType::RParen {
-                        return Err(format!("Unexpected token at {}:{}, expected ')'", token.line, token.pos));
+                        return Err(format!(
+                            "Unexpected token at {}:{}, expected ')'",
+                            token.line, token.pos
+                        ));
                     }
                 } else {
-                    return Err(format!("Missing ')' after instruction at {}:{}", inst_token.line, inst_token.pos));
+                    return Err(format!(
+                        "Missing ')' after instruction at {}:{}",
+                        inst_token.line, inst_token.pos
+                    ));
                 }
 
                 // QBit index
                 if let Some(token) = rem_tokens.pop_front() {
                     match token.t {
                         TokenType::Integer(u) => q_val = u,
-                        _ => return Err(format!("Unexpected token at {}:{}, expected qbit index", token.line, token.pos)),
+                        _ => {
+                            return Err(format!(
+                                "Unexpected token at {}:{}, expected qbit index",
+                                token.line, token.pos
+                            ))
+                        }
                     }
                 } else {
-                    return Err(format!("Missing qbit index after instruction at {}:{}", inst_token.line, inst_token.pos));
+                    return Err(format!(
+                        "Missing qbit index after instruction at {}:{}",
+                        inst_token.line, inst_token.pos
+                    ));
                 }
 
                 new_inst = match new_inst {
-                    Instruction::RX(_,_) => Instruction::RX(f_val, q_val),
-                    Instruction::RZ(_,_) => Instruction::RZ(f_val, q_val),
+                    Instruction::RX(_, _) => Instruction::RX(f_val, q_val),
+                    Instruction::RZ(_, _) => Instruction::RZ(f_val, q_val),
                     _ => Instruction::INVALID,
                 }
-            },
+            }
 
-            Instruction::CZ(_,_) => {
+            Instruction::CZ(_, _) => {
                 let q1_val;
                 let q2_val;
 
@@ -118,27 +154,43 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                 if let Some(token) = rem_tokens.pop_front() {
                     match token.t {
                         TokenType::Integer(u) => q1_val = u,
-                        _ => return Err(format!("Unexpected token at {}:{}, expected qbit index", token.line, token.pos)),
+                        _ => {
+                            return Err(format!(
+                                "Unexpected token at {}:{}, expected qbit index",
+                                token.line, token.pos
+                            ))
+                        }
                     }
                 } else {
-                    return Err(format!("Missing qbit index after instruction at {}:{}", inst_token.line, inst_token.pos));
+                    return Err(format!(
+                        "Missing qbit index after instruction at {}:{}",
+                        inst_token.line, inst_token.pos
+                    ));
                 }
 
                 // QBit index 2
                 if let Some(token) = rem_tokens.pop_front() {
                     match token.t {
                         TokenType::Integer(u) => q2_val = u,
-                        _ => return Err(format!("Unexpected token at {}:{}, expected qbit index", token.line, token.pos)),
+                        _ => {
+                            return Err(format!(
+                                "Unexpected token at {}:{}, expected qbit index",
+                                token.line, token.pos
+                            ))
+                        }
                     }
                 } else {
-                    return Err(format!("Missing qbit index after instruction at {}:{}", inst_token.line, inst_token.pos));
+                    return Err(format!(
+                        "Missing qbit index after instruction at {}:{}",
+                        inst_token.line, inst_token.pos
+                    ));
                 }
 
                 new_inst = match new_inst {
-                    Instruction::CZ(_,_) => Instruction::CZ(q1_val, q2_val),
+                    Instruction::CZ(_, _) => Instruction::CZ(q1_val, q2_val),
                     _ => Instruction::INVALID,
                 }
-            },
+            }
 
             Instruction::MEASURE(_) => {
                 let q_val;
@@ -147,19 +199,27 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
                 if let Some(token) = rem_tokens.pop_front() {
                     match token.t {
                         TokenType::Integer(u) => q_val = u,
-                        _ => return Err(format!("Unexpected token at {}:{}, expected qbit index", token.line, token.pos)),
+                        _ => {
+                            return Err(format!(
+                                "Unexpected token at {}:{}, expected qbit index",
+                                token.line, token.pos
+                            ))
+                        }
                     }
                 } else {
-                    return Err(format!("Missing qbit index after instruction at {}:{}", inst_token.line, inst_token.pos));
+                    return Err(format!(
+                        "Missing qbit index after instruction at {}:{}",
+                        inst_token.line, inst_token.pos
+                    ));
                 }
 
                 new_inst = match new_inst {
                     Instruction::MEASURE(_) => Instruction::MEASURE(q_val),
                     _ => Instruction::INVALID,
                 }
-            },
+            }
 
-            _ => {},
+            Instruction::INVALID => unreachable!(),
         };
 
         program.push(new_inst);
@@ -168,6 +228,7 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
     return Ok(program);
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     use super::*;

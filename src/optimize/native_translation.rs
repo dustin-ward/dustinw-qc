@@ -4,9 +4,7 @@ use crate::parser::Instruction;
 
 pub fn is_native_instruction(instr: &Instruction) -> bool {
     match instr {
-        Instruction::RX(val, _) => {
-            *val == 0.0 || val.abs() == PI || val.abs() == PI/2.0
-        },
+        Instruction::RX(val, _) => *val == 0.0 || val.abs() == PI || val.abs() == PI / 2.0,
         _ => true,
     }
 }
@@ -18,12 +16,14 @@ pub fn native_translation_pass(program: Vec<Instruction>) -> Result<Vec<Instruct
         if !is_native_instruction(&instr) {
             if let Instruction::RX(val, q) = instr {
                 // Use provided identity to translate non-native RX
-                new_prog.push(Instruction::RZ(PI/2.0, q));
-                new_prog.push(Instruction::RX(PI/2.0, q));
+                new_prog.push(Instruction::RZ(PI / 2.0, q));
+                new_prog.push(Instruction::RX(PI / 2.0, q));
                 new_prog.push(Instruction::RZ(val, q));
-                new_prog.push(Instruction::RX(-PI/2.0, q));
-                new_prog.push(Instruction::RZ(-PI/2.0, q));
-            } else {unreachable!()}
+                new_prog.push(Instruction::RX(-PI / 2.0, q));
+                new_prog.push(Instruction::RZ(-PI / 2.0, q));
+            } else {
+                unreachable!()
+            }
         } else {
             new_prog.push(instr);
         }
@@ -32,6 +32,7 @@ pub fn native_translation_pass(program: Vec<Instruction>) -> Result<Vec<Instruct
     return Ok(new_prog);
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     use super::*;

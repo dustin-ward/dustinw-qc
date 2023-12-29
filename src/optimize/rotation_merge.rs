@@ -5,10 +5,10 @@ pub fn rotation_merge_pass(mut program: Vec<Instruction>) -> Result<Vec<Instruct
 
     let mut i = 0;
     while i < program.len() {
-        if i < program.len()-1 {
+        if i < program.len() - 1 {
             if let Instruction::RX(f1, q1) = program[i] {
-                if let Instruction::RX(ref mut f2, q2) = program[i+1] {
-                    if q1==q2 {
+                if let Instruction::RX(ref mut f2, q2) = program[i + 1] {
+                    if q1 == q2 {
                         // Add to next instruction and skip
                         *f2 += f1;
                         i += 1;
@@ -16,15 +16,15 @@ pub fn rotation_merge_pass(mut program: Vec<Instruction>) -> Result<Vec<Instruct
                 }
             }
             if let Instruction::RZ(f1, q1) = program[i] {
-                if let Instruction::RZ(ref mut f2, q2) = program[i+1] {
-                    if q1==q2 {
+                if let Instruction::RZ(ref mut f2, q2) = program[i + 1] {
+                    if q1 == q2 {
                         *f2 += f1;
                         i += 1;
                     }
                 }
             }
         }
-        
+
         new_prog.push(program[i]);
         i += 1
     }
@@ -32,6 +32,7 @@ pub fn rotation_merge_pass(mut program: Vec<Instruction>) -> Result<Vec<Instruct
     return Ok(new_prog);
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     use super::*;

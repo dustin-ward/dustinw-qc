@@ -32,7 +32,9 @@ pub struct Token {
 // Read file by line from:
 // https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
+where
+    P: AsRef<Path>,
+{
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
 }
@@ -56,11 +58,11 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                         continue;
                     }
 
-                    let mut new_token = Token{
+                    let mut new_token = Token {
                         t: TokenType::UNDEF,
                         line: lineno as u32 + 1,
-                        pos : pos as u32 + 1,
-                        len: 1
+                        pos: pos as u32 + 1,
+                        len: 1,
                     };
 
                     new_token.t = match ch {
@@ -85,7 +87,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                                 "MEASURE" => TokenType::MEASURE,
                                 _ => TokenType::UNDEF,
                             }
-                        },
+                        }
 
                         // Numeric tokens (Floats or Ints)
                         ch if ch.is_numeric() => {
@@ -112,7 +114,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                                 let u: u32 = ident.parse().unwrap();
                                 TokenType::Integer(u)
                             }
-                        },
+                        }
 
                         // Misc Tokens
                         '(' => TokenType::LParen,
@@ -123,7 +125,12 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                     };
 
                     if new_token.t == TokenType::UNDEF {
-                        return Err(format!("Undefined token at {}:{} \"{}\"", lineno+1, pos+1, &line[pos..pos+new_token.len]));
+                        return Err(format!(
+                            "Undefined token at {}:{} \"{}\"",
+                            lineno + 1,
+                            pos + 1,
+                            &line[pos..pos + new_token.len]
+                        ));
                     }
 
                     tokens.push(new_token);
@@ -132,7 +139,7 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
                 // If last token was not an end-of-line token, insert one
                 if let Some(last_token) = tokens.last() {
                     if last_token.t != TokenType::EOL {
-                        tokens.push(Token{
+                        tokens.push(Token {
                             t: TokenType::EOL,
                             line: lineno as u32 + 1,
                             pos: line.len() as u32 + 1,
@@ -143,13 +150,14 @@ pub fn tokenize(filename: &str) -> Result<Vec<Token>, String> {
             }
 
             return Ok(tokens);
-        },
+        }
         Err(e) => {
             return Err(format!("Error reading file: {}", e));
-        },
+        }
     }
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     use super::*;

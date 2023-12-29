@@ -4,13 +4,13 @@ pub fn deadcode_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, Stri
     let new_prog = program
         .into_iter()
         .filter(|instr| match instr {
-            Instruction::RZ(val,_) | Instruction::RX(val,_) => {
+            Instruction::RZ(val, _) | Instruction::RX(val, _) => {
                 if *val == 0.0 {
                     false
                 } else {
                     true
                 }
-            },
+            }
             _ => true,
         })
         .collect();
@@ -18,6 +18,7 @@ pub fn deadcode_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, Stri
     return Ok(new_prog);
 }
 
+#[rustfmt::skip]
 #[cfg(test)]
 mod tests {
     use super::*;
