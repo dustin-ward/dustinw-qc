@@ -2,24 +2,30 @@ use std::f64::consts::PI;
 
 use crate::parser::Instruction;
 
+pub fn is_native_instruction(instr: &Instruction) -> bool {
+    match instr {
+        Instruction::RX(val, _) => {
+            *val == 0.0 || val.abs() == PI || val.abs() == PI/2.0
+        },
+        _ => true,
+    }
+}
+
 pub fn native_translation_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, String> {
     let mut new_prog: Vec<Instruction> = Vec::new();
 
     for instr in program {
-        match instr {
-            Instruction::RX(val, q) => {
-                if !(val == 0.0 || val.abs() == PI || val.abs() == PI/2.0) {
-                    // Use provided identity to translate non-native RX
-                    new_prog.push(Instruction::RZ(PI/2.0, q));
-                    new_prog.push(Instruction::RX(PI/2.0, q));
-                    new_prog.push(Instruction::RZ(val, q));
-                    new_prog.push(Instruction::RX(-PI/2.0, q));
-                    new_prog.push(Instruction::RZ(-PI/2.0, q));
-                } else {
-                    new_prog.push(instr);
-                }
-            },
-            _ => new_prog.push(instr), 
+        if !is_native_instruction(&instr) {
+            if let Instruction::RX(val, q) = instr {
+                // Use provided identity to translate non-native RX
+                new_prog.push(Instruction::RZ(PI/2.0, q));
+                new_prog.push(Instruction::RX(PI/2.0, q));
+                new_prog.push(Instruction::RZ(val, q));
+                new_prog.push(Instruction::RX(-PI/2.0, q));
+                new_prog.push(Instruction::RZ(-PI/2.0, q));
+            } else {unreachable!()}
+        } else {
+            new_prog.push(instr);
         }
     }
 
@@ -29,6 +35,17 @@ pub fn native_translation_pass(program: Vec<Instruction>) -> Result<Vec<Instruct
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_is_native_instruction() {
+        assert!(is_native_instruction(&Instruction::RZ(1.11, 0)));
+        assert!(is_native_instruction(&Instruction::RX(0.0, 1)));
+        assert!(is_native_instruction(&Instruction::RX(PI/2.0, 2)));
+        assert!(is_native_instruction(&Instruction::RX(-PI/2.0, 3)));
+        assert!(is_native_instruction(&Instruction::RX(PI, 4)));
+        assert!(is_native_instruction(&Instruction::RX(-PI, 5)));
+        assert!(!is_native_instruction(&Instruction::RX(1.11, 6)));
+    }
 
     #[test]
     fn no_non_native_instructions() {
