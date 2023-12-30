@@ -7,6 +7,9 @@ use dustinw_qc::parser::Instruction;
 
 use dustinw_qc::optimize::deadcode;
 use dustinw_qc::optimize::native_translation;
+use dustinw_qc::optimize::rotation_merge;
+use dustinw_qc::optimize::cz_cancel;
+use dustinw_qc::optimize::reorder;
 
 fn main() {
     // Parse Args
@@ -42,7 +45,18 @@ fn main() {
             "native_translation",
             native_translation::native_translation_pass,
         ),
-        ("deadcode", deadcode::deadcode_pass),
+        ("deadcode1", deadcode::deadcode_pass),
+        ("rotation_merge1", rotation_merge::rotation_merge_pass),
+        ("cz_cancel1", cz_cancel::cz_cancel_pass),
+        ("reorder1", reorder::reorder_pass),
+        ("deadcode2", deadcode::deadcode_pass),
+        ("rotation_merge2", rotation_merge::rotation_merge_pass),
+        ("cz_cancel2", cz_cancel::cz_cancel_pass),
+        ("reorder2", reorder::reorder_pass),
+        ("deadcode3", deadcode::deadcode_pass),
+        ("rotation_merge3", rotation_merge::rotation_merge_pass),
+        ("cz_cancel3", cz_cancel::cz_cancel_pass),
+        ("deadcode4", deadcode::deadcode_pass),
     ];
     for (name, pass_func) in code_passes {
         match pass_func(program) {
