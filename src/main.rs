@@ -78,5 +78,8 @@ fn main() {
         }
     }
 
-    dbg!(program);
+    // Print program to stdout
+    for instr in program {
+        println!("{instr}")
+    }
 }
