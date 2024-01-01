@@ -16,7 +16,7 @@ const MAX_OP_PASSES: u32 = 100;
 fn main() {
     // Parse Args
     let args: Vec<String> = env::args().collect();
-    if args.len() > 2 {
+    if args.len() < 2 {
         println!("No filename provided.\nUsage: '{} filename.quil'", args[0]);
         process::exit(1)
     }
@@ -40,7 +40,7 @@ fn compile(filename: &str) -> Vec<Instruction> {
 
     // Parse Tokens
     let program_result = parser::parse(tokens);
-    if let Err(err) = tokens_result {
+    if let Err(err) = program_result {
         println!("parser: {}", err);
         process::exit(1);
     }
