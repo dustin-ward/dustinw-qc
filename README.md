@@ -53,3 +53,5 @@ This is my first project written in Rust, so I'm absolutely sure that there are 
 the whole thing again but with 1 or 2 years of Rust experience. Realistically I would look at replacing my parser/lexer implementation with some kind of grammar/parsing library. 
 I'm pretty happy with what I came up with, but I could see it starting to get messy if I need to add more complex grammar rules. Starting fairly early in development with a set of solid tools 
 would help make the project more robust over time.
+
+I'd also like to explore the optimization identities a little more. I think there might be some tricks/cases that I could have missed. Especially regarding the reordering of instructions
