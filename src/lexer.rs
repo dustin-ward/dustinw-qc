@@ -2,32 +2,8 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-#[derive(Debug, PartialEq)]
-pub enum TokenType {
-    UNDEF,
-
-    Float(f64),
-    Integer(u32),
-
-    LParen,
-    RParen,
-    Negative,
-    EOL,
-
-    RX,
-    RZ,
-    CZ,
-    MEASURE,
-}
-
-// Wrap token type with line+pos info
-#[derive(Debug, PartialEq)]
-pub struct Token {
-    pub t: TokenType,
-    pub line: u32,
-    pub pos: u32,
-    pub len: usize,
-}
+use crate::token::Token;
+use crate::token::TokenType;
 
 // Read file by line from:
 // https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html

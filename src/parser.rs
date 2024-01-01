@@ -1,17 +1,9 @@
-use crate::lexer;
-use crate::lexer::TokenType;
+use crate::instruction::Instruction;
+use crate::token::Token;
+use crate::token::TokenType;
 use std::collections::VecDeque;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub enum Instruction {
-    INVALID,
-    RX(f64, u32),
-    RZ(f64, u32),
-    CZ(u32, u32),
-    MEASURE(u32),
-}
-
-pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
+pub fn parse(tokens: &Vec<Token>) -> Result<Vec<Instruction>, String> {
     let mut program: Vec<Instruction> = Vec::new();
 
     let mut iter = tokens.iter();
@@ -33,7 +25,7 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
         }
 
         // Match the rest of the tokens up to EOL
-        let mut rem_tokens: VecDeque<&lexer::Token> = VecDeque::new();
+        let mut rem_tokens: VecDeque<&Token> = VecDeque::new();
         while let Some(next_token) = iter.next() {
             if next_token.t == TokenType::EOL {
                 break;
@@ -232,7 +224,9 @@ pub fn parse(tokens: &Vec<lexer::Token>) -> Result<Vec<Instruction>, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer::Token;
+    use crate::token::Token;
+    use crate::lexer;
+
     const TESTDATA_DIR: &str = "examples/testdata";
 
     // General tests

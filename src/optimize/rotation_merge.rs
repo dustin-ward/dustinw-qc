@@ -1,4 +1,4 @@
-use crate::parser::Instruction;
+use crate::instruction::Instruction;
 
 pub fn rotation_merge_pass(mut program: Vec<Instruction>) -> Result<Vec<Instruction>, String> {
     let mut new_prog: Vec<Instruction> = Vec::new();

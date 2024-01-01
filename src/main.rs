@@ -1,9 +1,9 @@
 use std::env;
 use std::process;
 
+use dustinw_qc::instruction::Instruction;
 use dustinw_qc::lexer;
 use dustinw_qc::parser;
-use dustinw_qc::parser::Instruction;
 
 use dustinw_qc::optimize::cz_cancel;
 use dustinw_qc::optimize::deadcode;

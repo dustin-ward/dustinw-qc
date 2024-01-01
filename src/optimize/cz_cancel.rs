@@ -1,4 +1,4 @@
-use crate::parser::Instruction;
+use crate::instruction::Instruction;
 
 pub fn cancellable(cz1: &Instruction, cz2: &Instruction) -> bool {
     if let Instruction::CZ(q1, q2) = cz1 {

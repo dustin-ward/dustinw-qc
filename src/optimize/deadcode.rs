@@ -1,4 +1,4 @@
-use crate::parser::Instruction;
+use crate::instruction::Instruction;
 
 pub fn deadcode_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, String> {
     let new_prog = program

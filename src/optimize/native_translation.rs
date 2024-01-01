@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use crate::parser::Instruction;
+use crate::instruction::Instruction;
 
 pub fn is_native_instruction(instr: &Instruction) -> bool {
     match instr {

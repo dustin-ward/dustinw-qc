@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::parser::Instruction;
+use crate::instruction::Instruction;
 
 use super::cz_cancel::cancellable;
 
