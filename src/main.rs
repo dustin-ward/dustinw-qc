@@ -22,6 +22,14 @@ fn main() {
     }
     let filename = &args[1];
 
+    // Compile entry point
+    let program = compile(filename);
+
+    // Print program to stdout
+    println!("{}", prog_to_string(program));
+}
+
+fn compile(filename: &str) -> Vec<Instruction> {
     // Tokenize File
     let tokens_result = lexer::tokenize(filename);
     if let Err(err) = tokens_result {
@@ -78,8 +86,67 @@ fn main() {
         }
     }
 
-    // Print program to stdout
+    return program;
+}
+
+fn prog_to_string(program: Vec<Instruction>) -> String {
+    let mut output = String::new();
+
     for instr in program {
-        println!("{instr}")
+        output.push_str(&format!("{instr}\n"));
+    }
+    output.pop();
+
+    return output;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    const TESTDATA_DIR: &str = "examples/testdata";
+
+    // Provided sample input
+
+    #[test]
+    fn test_sample_input1() {
+        let test_filename = format!("{TESTDATA_DIR}/sample_1.quil");
+        let actual_program = compile(&test_filename);
+        let actual_string = prog_to_string(actual_program);
+        let actual_iter = actual_string.lines();
+
+        let compiled_filename = format!("{TESTDATA_DIR}/sample_1_compiled.quil");
+        let expected_string = fs::read_to_string(compiled_filename).unwrap();
+        let expected_iter = expected_string.lines();
+
+        assert!(actual_iter.eq(expected_iter));
+    }
+
+    #[test]
+    fn test_sample_input2() {
+        let test_filename = format!("{TESTDATA_DIR}/sample_2.quil");
+        let actual_program = compile(&test_filename);
+        let actual_string = prog_to_string(actual_program);
+        let actual_iter = actual_string.lines();
+
+        let compiled_filename = format!("{TESTDATA_DIR}/sample_2_compiled.quil");
+        let expected_string = fs::read_to_string(compiled_filename).unwrap();
+        let expected_iter = expected_string.lines();
+
+        assert!(actual_iter.eq(expected_iter));
+    }
+
+    #[test]
+    fn test_sample_input3() {
+        let test_filename = format!("{TESTDATA_DIR}/sample_3.quil");
+        let actual_program = compile(&test_filename);
+        let actual_string = prog_to_string(actual_program);
+        let actual_iter = actual_string.lines();
+
+        let compiled_filename = format!("{TESTDATA_DIR}/sample_3_compiled.quil");
+        let expected_string = fs::read_to_string(compiled_filename).unwrap();
+        let expected_iter = expected_string.lines();
+
+        assert!(actual_iter.eq(expected_iter));
     }
 }
