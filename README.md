@@ -1,4 +1,4 @@
-Simple Rust Compiler
+# Simple Rust Compiler
 
 Simple parser/lexer/optimizer writtin in standard rust.
 
