@@ -17,7 +17,7 @@ fn main() {
     // Parse Args
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        println!("No filename provided.\nUsage: '{} filename.quil'", args[0]);
+        println!("No filename provided.\nUsage: '{} filename.inq'", args[0]);
         process::exit(1)
     }
     let filename = &args[1];
@@ -110,12 +110,12 @@ mod tests {
 
     #[test]
     fn test_sample_input1() {
-        let test_filename = format!("{TESTDATA_DIR}/sample_1.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_1.inq");
         let actual_program = compile(&test_filename);
         let actual_string = prog_to_string(actual_program);
         let actual_iter = actual_string.lines();
 
-        let compiled_filename = format!("{TESTDATA_DIR}/sample_1_compiled.quil");
+        let compiled_filename = format!("{TESTDATA_DIR}/sample_1_compiled.inq");
         let expected_string = fs::read_to_string(compiled_filename).unwrap();
         let expected_iter = expected_string.lines();
 
@@ -124,12 +124,12 @@ mod tests {
 
     #[test]
     fn test_sample_input2() {
-        let test_filename = format!("{TESTDATA_DIR}/sample_2.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_2.inq");
         let actual_program = compile(&test_filename);
         let actual_string = prog_to_string(actual_program);
         let actual_iter = actual_string.lines();
 
-        let compiled_filename = format!("{TESTDATA_DIR}/sample_2_compiled.quil");
+        let compiled_filename = format!("{TESTDATA_DIR}/sample_2_compiled.inq");
         let expected_string = fs::read_to_string(compiled_filename).unwrap();
         let expected_iter = expected_string.lines();
 
@@ -138,12 +138,12 @@ mod tests {
 
     #[test]
     fn test_sample_input3() {
-        let test_filename = format!("{TESTDATA_DIR}/sample_3.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_3.inq");
         let actual_program = compile(&test_filename);
         let actual_string = prog_to_string(actual_program);
         let actual_iter = actual_string.lines();
 
-        let compiled_filename = format!("{TESTDATA_DIR}/sample_3_compiled.quil");
+        let compiled_filename = format!("{TESTDATA_DIR}/sample_3_compiled.inq");
         let expected_string = fs::read_to_string(compiled_filename).unwrap();
         let expected_iter = expected_string.lines();
 

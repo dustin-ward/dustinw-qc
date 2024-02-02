@@ -266,7 +266,7 @@ mod tests {
             Token{t: TokenType::EOL, line: 1, pos: 11, len: 1},
         ];
 
-        let test_filename = format!("{TESTDATA_DIR}/sample_1.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_1.inq");
         let actual_tokens = tokenize(&test_filename).unwrap();
 
         assert_eq!(expected_tokens.len(), actual_tokens.len());
@@ -322,7 +322,7 @@ mod tests {
             Token{t: TokenType::EOL, line: 7, pos: 10, len: 1},
         ];
 
-        let test_filename = format!("{TESTDATA_DIR}/sample_2.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_2.inq");
         let actual_tokens = tokenize(&test_filename).unwrap();
 
         assert_eq!(expected_tokens.len(), actual_tokens.len());
@@ -377,7 +377,7 @@ mod tests {
             Token{t: TokenType::EOL, line: 6, pos: 25, len: 1},
         ];
 
-        let test_filename = format!("{TESTDATA_DIR}/sample_3.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_3.inq");
         let actual_tokens = tokenize(&test_filename).unwrap();
 
         assert_eq!(expected_tokens.len(), actual_tokens.len());

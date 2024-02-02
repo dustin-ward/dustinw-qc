@@ -449,7 +449,7 @@ mod tests {
             Instruction::RX(0.45, 0),
         ];
 
-        let test_filename = format!("{TESTDATA_DIR}/sample_1.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_1.inq");
         let tokens = lexer::tokenize(&test_filename).unwrap();
         let actual_instr = parse(&tokens).unwrap();
 
@@ -472,7 +472,7 @@ mod tests {
             Instruction::MEASURE(1),
         ];
 
-        let test_filename = format!("{TESTDATA_DIR}/sample_2.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_2.inq");
         let tokens = lexer::tokenize(&test_filename).unwrap();
         let actual_instr = parse(&tokens).unwrap();
 
@@ -494,7 +494,7 @@ mod tests {
             Instruction::RZ(1.5707963267948966, 1),
         ];
 
-        let test_filename = format!("{TESTDATA_DIR}/sample_3.quil");
+        let test_filename = format!("{TESTDATA_DIR}/sample_3.inq");
         let tokens = lexer::tokenize(&test_filename).unwrap();
         let actual_instr = parse(&tokens).unwrap();
 

@@ -13,8 +13,10 @@ pub fn reorder_pass(program: Vec<Instruction>) -> Result<Vec<Instruction>, Strin
     // - Separate all RZs and CZ
     //   - No reason to have RZ-CZ-RZ-CZ, instead of RZ-RZ-CZ-CZ etc.
     // - Determine if CZ or RZ should go first.
-    //   - Determine number of optimizations that can be made,
+    //   - Could determine number of optimizations that can be made,
     //     then compare with reverse. Take max
+    //   - I dont think it will matter? Any combinable / cancellable combination
+    //     will be contained within the range for RZ
 
     let mut i = 0;
     while i < program.len() {
